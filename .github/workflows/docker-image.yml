@@ -1,0 +1,30 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker image tag
+        id: prep
+        run: echo "IMAGE_TAG=${{ secrets.DOCKER_USERNAME }}/my-image-name:build-$(date +%Y%m%d%H%M%S)" >> "$GITHUB_ENV"
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and push docker image
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: somanahallikarthik/sampleapp
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
